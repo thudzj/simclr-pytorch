@@ -136,6 +136,11 @@ class SimCLR(BaseSSL):
             help='Syncronises BatchNorm layers between all processes if True'
         )
 
+        # neuralef loss
+        parser.add_argument('--use_neuralef_loss', default=False, type=bool)
+        parser.add_argument('--riemannian_projection', default=False, type=bool)
+
+
     def __init__(self, hparams, device=None):
         super().__init__(hparams)
 
@@ -157,11 +162,20 @@ class SimCLR(BaseSSL):
         else:
             raise NotImplementedError
 
-        self.criterion = models.losses.NTXent(
-            tau=hparams.temperature,
-            multiplier=hparams.multiplier,
-            distributed=(hparams.dist == 'ddp'),
-        )
+        if hparams.use_neuralef_loss:
+            self.criterion = models.losses.NeuralEFLoss(
+                multiplier=hparams.multiplier,
+                distributed=(hparams.dist == 'ddp'),
+                batch_size=hparams.batch_size,
+                riemannian_projection=hparams.riemannian_projection,
+                device=device,
+            )
+        else:
+            self.criterion = models.losses.NTXent(
+                tau=hparams.temperature,
+                multiplier=hparams.multiplier,
+                distributed=(hparams.dist == 'ddp'),
+            )
 
     def reset_parameters(self):
         def conv2d_weight_truncated_normal_init(p):
@@ -405,7 +419,7 @@ class SSLEval(BaseSSL):
                 self.encoder.eval()
                 self.testset = create_emb_dataset(self.testset)
                 self.trainset = create_emb_dataset(self.trainset)
-        
+
         print(f'Train size: {len(self.trainset)}')
         print(f'Test size: {len(self.testset)}')
 
