@@ -169,7 +169,7 @@ class NeuralEFLoss(nn.Module):
                 grad.sub_((psi_x*grad).sum(0) * psi_x / n)
 
             # the scaling may be unnecessary
-            grad *= - 2 / n**2
+            grad *= - 1 # 2 / n**2
 
         # it is a pseudo loss whose gradient w.r.t. psi_x is the `grad'
         pseudo_loss = (psi_x * grad).sum()
