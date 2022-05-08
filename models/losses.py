@@ -128,7 +128,7 @@ class NeuralEFLoss(nn.Module):
 
         D = A.sum(-1).diag()
         L = D - A
-        L_normalized = D.rsqrt() @ L @ D.rsqrt()
+        L_normalized = D.inverse().sqrt() @ L @ D.inverse().sqrt()
 
         self.K = L_normalized
 
@@ -154,7 +154,7 @@ class NeuralEFLoss(nn.Module):
             n = z.shape[0]
 
         # ensure that each eigenfunction is normalized
-        psi_x = z / z.norm(dim=0) * math.sqrt(n)
+        psi_x = z / z.norm(dim=0).clamp(min=1e-6) * math.sqrt(n)
 
         # estimate the neuralef grad
         with torch.no_grad():

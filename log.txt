@@ -1,0 +1,2 @@
+CUDA_VISIBLE_DEVICES=3,4,6,7 python train.py --config configs/cifar_train_epochs1000_bs1024_neuralef.yaml
+CUDA_VISIBLE_DEVICES=3,4,6,7 python train.py --config configs/cifar_eval.yaml --encoder_ckpt logs/exman-train.py/runs/000012/checkpoint.pth.tar
